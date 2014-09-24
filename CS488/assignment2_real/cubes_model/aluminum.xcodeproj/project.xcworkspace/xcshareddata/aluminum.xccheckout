@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>F7915389-DECD-433A-81F2-56D55B1B877E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>aluminum</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>032D286A09B44363EF6185324D905A2A838BFF69</key>
+		<string>https://github.com/ggonza89/school_uic.git</string>
+		<key>87CE086DE70070CBF4C590CEAEBED9F6AA156F83</key>
+		<string>https://github.com/CreativeCodingLab/aluminum</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>osx/examples/xcode-demos/cubes_model/aluminum.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>032D286A09B44363EF6185324D905A2A838BFF69</key>
+		<string>../../../../../../..</string>
+		<key>87CE086DE70070CBF4C590CEAEBED9F6AA156F83</key>
+		<string>../../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/CreativeCodingLab/aluminum</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>87CE086DE70070CBF4C590CEAEBED9F6AA156F83</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>032D286A09B44363EF6185324D905A2A838BFF69</string>
+			<key>IDESourceControlWCCName</key>
+			<string></string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>87CE086DE70070CBF4C590CEAEBED9F6AA156F83</string>
+			<key>IDESourceControlWCCName</key>
+			<string>aluminum</string>
+		</dict>
+	</array>
+</dict>
+</plist>
