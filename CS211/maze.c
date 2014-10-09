@@ -6,23 +6,26 @@ typedef enum {FALSE = 0, TRUE, NO = 0, YES} boolean;
 
 typedef enum {UNVISITED = 0, VISITED} visitType;
 
-typedef struct mazeStruct
-{
-//    char arr[32][32];  /* allows for a maze of size 30x30 plus outer walls */
-    char ** arr;
-    int xsize, ysize;
-    int xstart, ystart;
-    int xend, yend;
-} maze;
+typedef enum {BLOCKED = 0, UNBLOCKED, START, END} mazeType;
 
 typedef struct mazeNode {
 
+    mazeType type;
     int xpos;
     int ypos;
     visitType visited;
     struct mazeNode * next;
 
 } mazeNode;
+
+typedef struct mazeStruct {
+
+    mazeNode ** arr;
+    int xsize, ysize;
+    int xstart, ystart;
+    int xend, yend;
+
+} maze;
 
 typedef mazeNode * mazePtr;
 
@@ -64,6 +67,7 @@ make the data token the new top of the stack
 void push(mazePtr * stack, mazeNode data) {
 
     mazePtr dataToken = (mazePtr) malloc (sizeof(mazeNode));
+    dataToken->type = data.type;
     dataToken->visited = data.visited;
     dataToken->xpos = data.xpos;
     dataToken->ypos = data.ypos;
@@ -75,29 +79,6 @@ void push(mazePtr * stack, mazeNode data) {
     *stack = dataToken;
 
 }
-
-/*
-displays the contents of the list
-*/
-// void displayListInformation (mazePtr stack) {
-
-//     while (stack != NULL) {
-
-//         if(stack->visited == VISITED)
-//             printf("*", stack->val);
-//         else
-//             printf("%c", stack->op);
-
-//         // printNodestack);
-//         stack = stack->next;
-//         if(stack != NULL)
-//             printf(", ");
-
-//     }
-
-//     printf ("\n");
-
-// }
 
 /*
 return the top of the stack, if stack empty return NULL
@@ -118,7 +99,7 @@ void pop(mazePtr * stack) {
 
     if(!isEmpty(*stack)) {
 
-        tokenPtr topOfStack = *stack;
+        mazePtr topOfStack = *stack;
         *stack = topOfStack->next;
 
         free(topOfStack);
@@ -126,6 +107,127 @@ void pop(mazePtr * stack) {
     }
     else
         fprintf(stderr, "Stack is empty! Cannot pop...\n");
+
+}
+
+/*
+Prints contents of the stack in reverse order
+*/
+void printSolution(mazePtr stack) {
+
+    if(isEmpty(stack))
+        return;
+
+    printSolution(stack->next);
+    printf("(%d, %d)\n", stack->xpos, stack->ypos);
+
+}
+
+/*
+Implements Depth First Search to find the solution of the maze
+*/
+void findSolution(maze * m1) {
+
+    // Mark all unblocked positions in the maze as "UNVISITED"
+    for(int i = 0; i < m1->xsize+2; ++i)
+        for(int j = 0; j < m1->ysize+2; ++j)
+            if(m1->arr[i][j].type == UNBLOCKED)
+                m1->arr[i][j].visited = UNVISITED;
+
+    // push the start position's coordinates on the stack, mark visited
+    mazePtr stack;
+    push(&stack, m1->arr[m1->xstart][m1->ystart]);
+    stack->visited = VISITED;
+
+    while(!isEmpty(stack)) {
+
+        // end has been found
+        mazePtr topOfStack = top(stack);
+        if(topOfStack->type == END) {
+
+            printSolution(stack);
+            while(!isEmpty(stack))
+                pop(&stack);
+            return;
+
+        }
+
+        // coordinate at top of stack has an unvisited and unblocked neighbor
+        // if(!neighborVisited(m1, &stack))
+        //     pop(&stack);
+        int x = topOfStack->xpos, y = topOfStack->ypos;
+        mazeNode neighbor;
+
+        boolean noNeighbor = NO;
+
+        // first checks below
+        if(x != m1->xsize && noNeighbor == NO) {
+
+            neighbor = m1->arr[x+1][y];
+            if((neighbor.type == UNBLOCKED || neighbor.type == END) && neighbor.visited == UNVISITED) {
+
+                m1->arr[x+1][y].visited = VISITED;
+                push(&stack, m1->arr[x+1][y]);
+                noNeighbor = YES;
+
+            }
+
+        }
+
+        // checks top
+        if(x != 1 && noNeighbor == NO) {
+
+            neighbor = m1->arr[x-1][y];
+            if((neighbor.type == UNBLOCKED || neighbor.type == END) && neighbor.visited == UNVISITED) {
+
+                m1->arr[x-1][y].visited = VISITED;
+                push(&stack, m1->arr[x-1][y]);
+                noNeighbor = YES;
+
+            }
+
+        }
+
+        // checks to the right
+        if(y != m1->ysize && noNeighbor == NO) {
+
+            neighbor = m1->arr[x][y+1];
+            if((neighbor.type == UNBLOCKED || neighbor.type == END) && neighbor.visited == UNVISITED) {
+
+                m1->arr[x][y+1].visited = VISITED;
+                push(&stack, m1->arr[x][y+1]);
+                noNeighbor = YES;
+
+            }
+
+        }
+
+        // checks to the left
+        if(y != 1 && noNeighbor == NO) {
+
+            neighbor = m1->arr[x][y-1];
+            if((neighbor.type == UNBLOCKED || neighbor.type == END) && neighbor.visited == UNVISITED) {
+
+                m1->arr[x][y-1].visited = VISITED;
+                push(&stack, m1->arr[x][y-1]);
+                noNeighbor = YES;
+
+            }
+
+        }
+
+        if(noNeighbor == NO) {
+
+            if(DEBUG)
+                printf("[DEBUG] coordinate (%d,%d) does not have an unvisited (and unblocked) neighbor\n", x, y);
+            pop(&stack);
+
+        }
+
+
+    }
+
+    printf("No solution was found...\n");
 
 }
 
@@ -166,13 +268,24 @@ int main (int argc, char **argv)
     FILE *src;
 
     /* verify the proper number of command line arguments were given */
-    if(argc != 2) {
-        printf("Usage: %s <input file name>\n", argv[0]);
+    if(argc < 2) {
+        printf("Usage: %s [-d] <input file name>\n", argv[0]);
         exit(-1);
     }
 
+    char * input_file = argv[1];
+    if(argc == 3) {
+
+        DEBUG = TRUE;
+        printf("strcmp(input_file, -d) = %d\n", strcmp(input_file, "-d"));
+        if(strcmp(input_file, "-d") == 0)
+            input_file = argv[2];
+
+    }
+    // printf("%d\n", argc);
+    // return 0;
     /* Try to open the input file. */
-    if ( ( src = fopen( argv[1], "r" )) == NULL )
+    if ( ( src = fopen( input_file, "r" )) == NULL )
     {
         printf ( "Can't open input file: %s", argv[1] );
         exit(-1);
@@ -222,30 +335,35 @@ int main (int argc, char **argv)
     }
 
     /* allocate the maze */
-    m1.arr = (char **) malloc (sizeof(char *) * (m1.xsize+2));
+    m1.arr = (mazeNode **) malloc (sizeof(mazeNode *) * (m1.xsize+2));
     for (i = 0; i < m1.xsize+2; i++)
-        m1.arr[i] = (char *) malloc (sizeof(char ) * (m1.ysize+2));
+        m1.arr[i] = (mazeNode *) malloc (sizeof(mazeNode) * (m1.ysize+2));
 
     /* initialize the maze to empty */
     for (i = 0; i < m1.xsize+2; i++)
-        for (j = 0; j < m1.ysize+2; j++)
-            m1.arr[i][j] = '.';
+        for (j = 0; j < m1.ysize+2; j++) {
+
+            m1.arr[i][j].type = UNBLOCKED;
+            m1.arr[i][j].xpos = i;
+            m1.arr[i][j].ypos = j;
+
+        }
 
     /* mark the borders of the maze with *'s */
     for (i=0; i < m1.xsize+2; i++)
     {
-        m1.arr[i][0] = '*';
-        m1.arr[i][m1.ysize+1] = '*';
+        m1.arr[i][0].type = BLOCKED;
+        m1.arr[i][m1.ysize+1].type = BLOCKED;
     }
     for (i=0; i < m1.ysize+2; i++)
     {
-        m1.arr[0][i] = '*';
-        m1.arr[m1.xsize+1][i] = '*';
+        m1.arr[0][i].type = BLOCKED;
+        m1.arr[m1.xsize+1][i].type = BLOCKED;
     }
 
     /* mark the starting and ending positions in the maze */
-    m1.arr[m1.xstart][m1.ystart] = 's';
-    m1.arr[m1.xend][m1.yend] = 'e';
+    m1.arr[m1.xstart][m1.ystart].type = START;
+    m1.arr[m1.xend][m1.yend].type = END;
 
     /* mark the blocked positions in the maze with *'s */
     while (fscanf (src, "%d %d", &xpos, &ypos) != EOF)
@@ -262,7 +380,7 @@ int main (int argc, char **argv)
             fprintf(stderr, "=> Invalid: attempting to block starting position");
         // default is to mark spot as blocked
         else
-            m1.arr[xpos][ypos] = '*';
+            m1.arr[xpos][ypos].type = BLOCKED;
 
         fprintf(stderr, "\n");
 
@@ -271,11 +389,23 @@ int main (int argc, char **argv)
     /* print out the initial maze */
     for (i = 0; i < m1.xsize+2; i++)
     {
-        for (j = 0; j < m1.ysize+2; j++)
-            printf ("%c", m1.arr[i][j]);
+        for (j = 0; j < m1.ysize+2; j++) {
+
+            if(m1.arr[i][j].type == BLOCKED)
+                printf("*");
+            else if(m1.arr[i][j].type == UNBLOCKED)
+                printf(".");
+            else if(m1.arr[i][j].type == START)
+                printf("s");
+            else
+                printf("e");
+
+        }
         printf("\n");
     }
 
+    // return 0;
 
+    findSolution(&m1);
 
 }
